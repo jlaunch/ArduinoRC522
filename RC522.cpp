@@ -8,14 +8,17 @@ RC522::RC522(int pinSelect) {
 	reset();
 };
 
+// Issues a soft-reset
 void RC522::reset() {
 	regWrite(RC522_REG_COMMAND, RC522_CMD_SOFTRESET);
 };
 
+// Selects the device by setting the pin high
 void RC522::select() {
 	digitalWrite(_pinSelect, LOW);
 };
 
+// Unselects the device by setting the pin high
 void RC522::deselect() {
 	digitalWrite(_pinSelect, HIGH);
 };
@@ -55,3 +58,43 @@ void RC522::regWriteBulk(uint8_t addr, uint8_t* data, unsigned int dataLen) {
 	};
 	deselect();
 };
+
+// Checks if the device is busy doing another operation
+bool RC522::isBusy() {
+	uint8_t val = regRead(RC522_REG_CMD);
+	return val & 0x0F != RC522_CMD_IDLE;
+};
+
+// Cancels the comand being executed
+void RC522::interrupt() {
+	regWrite(RC522_REG_COMMAND, RC522_CMD_IDLE);
+};
+
+// Bidirectional communication
+int RC522::transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned int inMaxLen, uint8_t* outLen) {
+	// Wait until the device is ready
+	while (isBusy());
+	// Write data to send to FIFO
+	regWriteBulk(RC522_REG_FIFODATA, out, outLen);
+	// Start command
+	regWrite(RC522_REG_COMMAND, RC522_CMD_TRANSCEIVE);
+	// Wait until it finishes
+	while (isBusy());
+	// Check if an error ocurred
+	uint8_t error = regRead(RC522_REG_ERROR) & 0xDF; // AND with 0xDF to exclude RFU bit
+	if (error != 0) {
+		if (error == 0x10) // Only overflow bit is set
+			return RC522_OVERFLOW;
+		return RC522_ERROR;
+	};
+	// Get amount of read bytes
+	uint8_t rxLen = regRead(RC522_REG_FIFOLEVEL);
+	&outLen = rxLen;
+	// If we have received more than what the output buffer can hold, throw an error
+	if (rxLen > inMaxLen)
+		return RC522_OVERFLOW;
+	// Read data
+	regReadBulk(RC522_REG_FIFODATA, in, rxLen);
+	return RC522_OK;
+};
+	

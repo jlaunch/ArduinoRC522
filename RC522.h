@@ -1,6 +1,6 @@
 
-#ifndef HAVE_RC522
-#define HAVE_RC522
+#ifndef __HAVE_RC522_H
+#define __HAVE_RC522_H
 
 #include <Arduino.h>
 #include <SPI.h>
@@ -74,12 +74,15 @@
 #define RC522_CMD_SOFTRESET 0xF
 
 // ### KEYS IDS ###
-#define RC522_KEY_BIAS 0x60
-#define RC522_KEY_A RC522_KEY_BIAS+0x00
-#define RC522_KEY_B RC522_KEY_BIAS+0x01
+#define RC522_KEY_A 0
+#define RC522_KEY_B 1
 
-#define __RC522_ACTION_READ 1
-#define __RC522_ACTION_WRITE 2
+// ### RETURN CODES ###
+#define RC522_OK 0 // No error
+#define RC522_ERROR 1 // Generic/unknown error
+#define RC522_NOTAG 2 // No tag detected
+#define RC522_OVERFLOW 3 // Buffer overflow
+
 
 class RC522 {
 	public:
@@ -91,6 +94,9 @@ class RC522 {
 		void regReadBulk(uint8_t addr, uint8_t* data, unsigned int dataLen);
 		void regWrite(uint8_t addr, uint8_t data);
 		void regWriteBulk(uint8_t addr, uint8_t* data, unsigned int dataLen);
+		bool isBusy();
+		void interrupt();
+		void transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned int inMaxLen, unsigned int* outLen);
 	private:
 		int _pinSelect;
 };
