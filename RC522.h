@@ -96,7 +96,7 @@ class RC522 {
 		void regWriteBulk(uint8_t addr, uint8_t* data, unsigned int dataLen);
 		bool isBusy();
 		void interrupt();
-		void transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned int inMaxLen, unsigned int* outLen);
+		void transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned int inMaxLen, unsigned int* inLen);
 	private:
 		int _pinSelect;
 };

@@ -71,7 +71,7 @@ void RC522::interrupt() {
 };
 
 // Bidirectional communication
-int RC522::transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned int inMaxLen, uint8_t* outLen) {
+int RC522::transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned int inMaxLen, uint8_t* inLen) {
 	// Wait until the device is ready
 	while (isBusy());
 	// Write data to send to FIFO
@@ -89,7 +89,8 @@ int RC522::transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned i
 	};
 	// Get amount of read bytes
 	uint8_t rxLen = regRead(RC522_REG_FIFOLEVEL);
-	&outLen = rxLen;
+	if (inLen != NULL)
+		&inLen = rxLen;
 	// If we have received more than what the output buffer can hold, throw an error
 	if (rxLen > inMaxLen)
 		return RC522_OVERFLOW;
