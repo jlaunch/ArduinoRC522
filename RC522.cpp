@@ -61,7 +61,7 @@ void RC522::regWriteBulk(uint8_t addr, uint8_t* data, unsigned int dataLen) {
 
 // Checks if the device is busy doing another operation
 bool RC522::isBusy() {
-	uint8_t val = regRead(RC522_REG_CMD);
+	uint8_t val = regRead(RC522_REG_COMMAND);
 	return val & 0x0F != RC522_CMD_IDLE;
 };
 
@@ -90,7 +90,7 @@ int RC522::transceive(uint8_t* out, unsigned int outLen, uint8_t* in, unsigned i
 	// Get amount of read bytes
 	uint8_t rxLen = regRead(RC522_REG_FIFOLEVEL);
 	if (inLen != NULL)
-		&inLen = rxLen;
+		*inLen = rxLen;
 	// If we have received more than what the output buffer can hold, throw an error
 	if (rxLen > inMaxLen)
 		return RC522_OVERFLOW;
